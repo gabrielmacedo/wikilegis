@@ -1,4 +1,5 @@
 from django_comments.models import Comment
+from django.contrib.contenttypes.models import ContentType
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -6,11 +7,13 @@ from rest_framework import status
 
 from wikilegis import settings
 from wikilegis.auth2.models import User
-from wikilegis.core.models import Bill, BillSegment, TypeSegment
+from wikilegis.core.models import Bill, BillSegment, TypeSegment, UpDownVote
 from wikilegis.core.serializers import (BillSerializer, SegmentSerializer,
                                         CommentsSerializer, UserSerializer,
-                                        TypeSegmentSerializer)
-from rest_framework import generics, permissions
+                                        TypeSegmentSerializer, BillDetailSerializer,
+                                        CommentsSerializerForPost, SegmentSerializerForPost,
+                                        UpDownVoteSerializer, UpDownVoteSerializerForPost)
+from rest_framework import generics, permissions, mixins
 
 
 class TokenPermission(permissions.BasePermission):
@@ -23,8 +26,19 @@ class TokenPermission(permissions.BasePermission):
             return False
 
 
+class BillAPI(generics.GenericAPIView, mixins.RetrieveModelMixin):
+    serializer_class = BillDetailSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def get_object(self):
+        obj = Bill.objects.get(pk=self.kwargs['pk'])
+        return obj
+
+
 class BillListAPI(generics.ListAPIView):
-    queryset = Bill.objects.order_by('-created')
+    queryset = Bill.objects.exclude(status='draft').order_by('-created')
     serializer_class = BillSerializer
 
     def get(self, request, *args, **kwargs):
@@ -41,27 +55,86 @@ class BillListAPI(generics.ListAPIView):
         return Response(serializer.data)
 
 
-class SegmentsListAPI(generics.ListAPIView):
-    queryset = BillSegment.objects.order_by('-created')
+class SegmentsListAPI(generics.ListCreateAPIView):
+    queryset = BillSegment.objects.exclude(bill__status='draft').order_by('-created')
     serializer_class = SegmentSerializer
 
-    def get(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        if request.GET.get('api_key') != settings.API_KEY:
-            queryset = queryset.exclude(bill__status='draft')
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return self.serializer_class
+        elif self.request.method == 'POST':
+            return SegmentSerializerForPost
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+    def create(self, request, *args, **kwargs):
+        if request.user.is_authenticated():
+            obj_replaced = BillSegment.objects.get(id=request.data['replaced'])
+            obj = BillSegment()
+            obj.bill_id = request.data['bill']
+            obj.author = request.user
+            obj.original = False
+            obj.content = request.data['content']
+            obj.replaced = obj_replaced
+            obj.parent = obj_replaced.parent
+            obj.number = obj_replaced.number
+            obj.type = obj_replaced.type
+            obj.save()
+            return Response(status=201)
+        else:
+            return Response(status=403)
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
-
-class CommentListAPI(generics.ListAPIView):
+class CommentListAPI(generics.ListCreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentsSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return self.serializer_class
+        elif self.request.method == 'POST':
+            return CommentsSerializerForPost
+
+    def create(self, request, *args, **kwargs):
+        if request.user.is_authenticated():
+            obj_content_type = ContentType.objects.get_for_model(BillSegment)
+            obj = Comment()
+            obj.content_type = obj_content_type
+            obj.user = request.user
+            obj.comment = request.data['comment']
+            obj.object_pk = request.data['object_pk']
+            obj.site_id = settings.SITE_ID
+            obj.save()
+            return Response(status=201)
+        else:
+            return Response(status=403)
+
+
+class UpDownVoteListAPI(generics.ListCreateAPIView):
+    queryset = UpDownVote.objects.all()
+    serializer_class = UpDownVoteSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return self.serializer_class
+        elif self.request.method == 'POST':
+            return UpDownVoteSerializerForPost
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.request.user.is_authenticated():
+            queryset = queryset.filter(user=self.request.user)
+        return queryset
+
+    def post(self, request, *args, **kwargs):
+        if request.user.is_authenticated():
+            obj_content_type = ContentType.objects.get_for_model(BillSegment)
+            vote = UpDownVote.objects.get_or_create(user=request.user,
+                                                    object_id=request.data['object_id'],
+                                                    content_type=obj_content_type)[0]
+            vote.vote = eval(request.data['vote'])
+            vote.save()
+            return Response(status=201)
+        else:
+            return Response(status=403)
 
 
 class TypeSegmentAPI(generics.ListAPIView):
@@ -105,5 +178,7 @@ def api_root(request, format=None):
         'segment-types': reverse('types_segments_list_api',
                                  request=request, format=format),
         'users': reverse('users_list_api',
+                         request=request, format=format),
+        'votes': reverse('votes_api',
                          request=request, format=format)
     })

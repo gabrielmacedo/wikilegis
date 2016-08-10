@@ -13,12 +13,12 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse
 from django_comments.models import Comment
 from django_extensions.db.fields.json import JSONField
-
+from django.utils.translation import pgettext_lazy
 
 BILL_STATUS_CHOICES = (
     ('draft', _('Draft')),
     ('published', _('Published')),
-    ('closed', _('Closed'))
+    ('closed', pgettext_lazy('Not open', 'Closed'))
 )
 
 BILL_THEMES_CHOICES = (
@@ -40,6 +40,7 @@ BILL_THEMES_CHOICES = (
     ('industria', _('Industry')),
     ('institucional', _('Institutional')),
     ('meio-ambiente', _('Environment')),
+    ('participacao_e_transparencia', _('Participation and Transparency')),
     ('politica', _('Policy')),
     ('previdencia', _('Foresight')),
     ('relacoes-exteriores', _('Foreign Affairs')),
@@ -84,12 +85,14 @@ class Bill(TimestampedMixin):
     title = models.CharField(_('subject'), max_length=255)
     epigraph = models.CharField(_('epigraph'), max_length=255, null=True)
     description = models.TextField(_('digest'))
+    closing_date = models.DateField(_('closing date'), null=True, blank=True)
     status = models.CharField(_('status'), max_length=20, choices=BILL_STATUS_CHOICES, default='1')
     theme = models.CharField(_('theme'), max_length=255, choices=BILL_THEMES_CHOICES, default='documento')
     editors = models.ManyToManyField(
         'auth.Group', verbose_name=_('editors'), blank=True,
         help_text=_('Any users in any of these groups will '
                     'have permission to change this document.'))
+    reporting_member = models.ForeignKey('auth2.User', verbose_name=_('reporting member'), null=True, blank=True)
 
     metadata = GenericRelation('GenericData')
 
@@ -165,42 +168,18 @@ class BillSegment(TimestampedMixin):
                 return reverse('show_proposal', args=[self.bill.id, self.id])
 
 
-class CitizenAmendment(TimestampedMixin):
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name=_('author'))
-    segment = models.ForeignKey('core.BillSegment', related_name='amendments', verbose_name=_('bill segment'))
-    content = models.TextField(_('content'))
-
-    class Meta:
-        verbose_name = _('citizen amendment')
-        verbose_name_plural = _('citizen amendments')
-
-    def __unicode__(self):
-        return model_repr(CitizenAmendment, author=self.author,
-                          segment=self.segment, content=self.content)
-
-    def original_content(self):
-        return self.segment.content
-
-    def html_id(self):
-        return 'amendment-{0}'.format(self.pk)
-
-    @permalink
-    def get_absolute_url(self):
-        return 'show_amendment', [self.pk]
-
-
 class UpDownVote(TimestampedMixin):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name=_('user'))
     object_id = models.PositiveIntegerField()
     content_type = models.ForeignKey('contenttypes.ContentType')
     content_object = GenericForeignKey('content_type', 'object_id')
-    vote = models.BooleanField(choices=((True, _('Up Vote')), (False, _('Down Vote'))))
+    vote = models.BooleanField(default=False, choices=((True, _('Up Vote')), (False, _('Down Vote'))))
 
     class Meta:
         unique_together = ('user', 'object_id', 'content_type')
 
     def __unicode__(self):
-        return self.user
+        return self.user.get_full_name() or self.user.email
 
 
 class Proposition(models.Model):

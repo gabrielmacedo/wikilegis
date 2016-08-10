@@ -8,13 +8,13 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django_comments.models import Comment
 from wikilegis.auth2.models import User
-from wikilegis.core.models import Bill, CitizenAmendment, UpDownVote, BillSegment
+from wikilegis.core.models import Bill, UpDownVote, BillSegment
 from wikilegis.notification.models import HistoryNotification
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        bills = Bill.objects.all()
+        bills = Bill.objects.filter(status='published')
         current_site = Site.objects.get_current()
         for bill in bills:
             segment_amendments = defaultdict(list)
@@ -76,14 +76,11 @@ class Command(BaseCommand):
                                          'comments': dict(amendment_comments),
                                          'proposition': proposition,
                                          'top_amendments': BillSegment.objects.filter(id__in=top_amendments)})
-                superusers = User.objects.filter(is_superuser=True)
                 email_list = ['wikilegis@camara.leg.br']
                 subject = u'[Wikilegis] Atualizações ao %s %s' % (bill.title, proposition)
-                for superuser in superusers:
-                    email_list.append(superuser.email)
                 for editor in bill.editors.all():
                     for user in editor.user_set.all():
                         email_list.append(user.email)
-                mail = EmailMultiAlternatives(subject, '', '', email_list)
+                mail = EmailMultiAlternatives(subject, '', '', '', bcc=email_list)
                 mail.attach_alternative(html, 'text/html')
                 mail.send()

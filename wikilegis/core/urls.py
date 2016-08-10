@@ -2,13 +2,13 @@ from django.conf.urls import url
 from django.views.generic.base import TemplateView
 
 from wikilegis.core.api import (BillListAPI, SegmentsListAPI, CommentListAPI,
-                                api_root, UserUpdateAPI, UserAPI,
-                                TypeSegmentAPI)
-from wikilegis.core.views import BillReport, CreateProposal
+                                api_root, UserUpdateAPI, UserAPI, BillAPI,
+                                TypeSegmentAPI, UpDownVoteListAPI)
+from wikilegis.core.views import BillReport, CreateProposal, BillDetailView
 
 urlpatterns = [
     url(r'^$', 'wikilegis.core.views.index', name='index'),
-    url(r'^bill/(?P<bill_id>\d+)/$', 'wikilegis.core.views.show_bill',
+    url(r'^bill/(?P<pk>\d+)/$', BillDetailView.as_view(),
         name='show_bill'),
     url(r'^bill/(?P<bill_id>\d+)/proposal/$', CreateProposal.as_view(),
         name='create_proposal'),
@@ -34,6 +34,8 @@ urlpatterns += [
     url(r'^api/$', api_root),
     url(r'^api/bills/$', BillListAPI.as_view(),
         name='bill_list_api'),
+    url(r'^api/bills/(?P<pk>\d+)$', BillAPI.as_view(),
+        name='bill_api'),
     url(r'^api/segment_types/$', TypeSegmentAPI.as_view(),
         name='types_segments_list_api'),
     url(r'^api/segments/$', SegmentsListAPI.as_view(),
@@ -43,5 +45,7 @@ urlpatterns += [
     url(r'^api/user/update/$', UserUpdateAPI.as_view(),
         name='user_update_api'),
     url(r'^api/users/$', UserAPI.as_view(),
-        name='user_api'),
+        name='users_list_api'),
+    url(r'^api/votes/$', UpDownVoteListAPI.as_view(),
+        name='votes_api'),
 ]

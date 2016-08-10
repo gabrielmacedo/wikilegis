@@ -69,6 +69,14 @@ INSTALLED_APPS = (
     'easy_thumbnails',
     'image_cropping',
     'rest_framework',
+    'corsheaders',
+)
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_METHODS = (
+    'GET',
+    'OPTIONS'
 )
 
 REST_FRAMEWORK = {
@@ -83,6 +91,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE_CLASSES = (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -161,6 +170,8 @@ REGISTRATION_AUTO_LOGIN = True
 
 REGISTRATION_FORM = 'wikilegis.auth2.forms.RegistrationForm'
 
+REGISTRATION_EMAIL_SUBJECT_PREFIX = ""
+
 # XXX Please don't change. The URL is included in `wikilegis.auth2.urls`.
 INCLUDE_REGISTER_URL = False
 
@@ -231,6 +242,7 @@ language_tuple = lambda language_code: (language_code, languages[language_code])
 LANGUAGES = (
     language_tuple('en'),
     language_tuple('pt-br'),
+    language_tuple('es'),
 )
 
 LANGUAGE_CODE = 'pt-br'
@@ -269,7 +281,7 @@ MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'public', 'media'))
 
-## Debug toolbar
+# Debug toolbar
 STATIC_IPS = ('127.0.0.1', '::1', )
 
 # Login settings
