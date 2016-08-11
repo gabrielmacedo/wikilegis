@@ -16,6 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 from decouple import config
+from django_database_url import parse as db_url
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -130,13 +131,9 @@ WSGI_APPLICATION = 'wikilegis.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
+DATABASES = dict(default=config('DATABASE_URL',
+                                cast=db_url,
+                                default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')))
 
 # django-haystack: http://django-haystack.readthedocs.org/
 HAYSTACK_CONNECTIONS = {
