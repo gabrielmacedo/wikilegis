@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 var domain = 'http://wikilegis-staging.labhackercd.net/';
-=======
-var domain = 'http://wikilegis.labhackercd.net/';
->>>>>>> add decode string to show username
 var bill_id = $('.wikilegis-widget').attr('bill-id')
 
 function loadScript(url){    

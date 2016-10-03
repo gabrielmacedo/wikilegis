@@ -11,31 +11,32 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 
 from __future__ import unicode_literals
+
+import os
+import django.conf.global_settings as default
+from decouple import config
+
+from decouple import config, Csv
+from dj_database_url import parse as db_url
 from django.utils.translation import ugettext_lazy as _
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
-from decouple import config
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HERE = os.path.dirname(os.path.abspath(__file__))
-
-# Import `default` as the default settings. This can be handy while pushing items into tuples.
-import django.conf.global_settings as default
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'g8#!8*0sr!zsg!q=on=n66dtie69u0z1qhfk-&c8bc_%t#&g@%'
+SECRET_KEY = config('DJANGO_SECRET_KEY', default='g8#!8*0sr!zsg!q=on=n66dtie69u0z1qhfk-&c8bc_%t#&g@%')
 
 API_KEY = config('API_KEY', default='9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(lambda x: x.strip().strip(',').strip()), default='127.0.0.1')
 
 # Application definition
 
@@ -131,12 +132,9 @@ WSGI_APPLICATION = 'wikilegis.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+DATABASES = dict(default=config('DATABASE_URL',
+                                cast=db_url,
+                                default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')))
 
 
 # django-haystack: http://django-haystack.readthedocs.org/
@@ -166,7 +164,8 @@ AUTHENTICATION_BACKENDS = (
 
 # If `False` the registration view will not require user activation through e-mail.
 # Useful to disable activation during DEBUG or other situations where mails can't be sent.
-ACCOUNT_ACTIVATION_REQUIRED = not DEBUG
+
+ACCOUNT_ACTIVATION_REQUIRED = config('ACCOUNT_ACTIVATION_REQUIRED', cast=bool, default=(not DEBUG))
 
 ACCOUNT_ACTIVATION_DAYS = 7
 
@@ -177,8 +176,20 @@ REGISTRATION_FORM = 'wikilegis.auth2.forms.RegistrationForm'
 REGISTRATION_EMAIL_SUBJECT_PREFIX = ""
 
 # XXX Please don't change. The URL is included in `wikilegis.auth2.urls`.
+
 INCLUDE_REGISTER_URL = False
 
+LOGIN_REDIRECT_URL = '/'
+
+
+# Use GMail SMTP to send mail.
+
+EMAIL_HOST = config('EMAIL_HOST', default='localhost')
+EMAIL_PORT = config('EMAIL_PORT', cast=int, default=587)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='')
 
 # python-social-auth: http://psa.matiasaguirre.net/docs/index.html
 
@@ -204,11 +215,11 @@ USER_FIELDS = ('email',)
 
 # Fill these with your application credentials in order to use social logins.
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', default='')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET', default='')
 
-SOCIAL_AUTH_FACEBOOK_KEY = ''
-SOCIAL_AUTH_FACEBOOK_SECRET = ''
+SOCIAL_AUTH_FACEBOOK_KEY = config('SOCIAL_AUTH_FACEBOOK_KEY', default='')
+SOCIAL_AUTH_FACEBOOK_SECRET = config('SOCIAL_AUTH_FACEBOOK_SECRET', default='')
 
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 
@@ -234,7 +245,7 @@ SOCIAL_BACKEND_INFO = {
 
 # Site-specific settings
 
-SITE_ID = 1
+SITE_ID = config('SITE_ID', cast=int, default=1)
 
 
 # Internationalization
@@ -267,9 +278,8 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'public', 'static'))
 
-STATICFILES_FINDERS = default.STATICFILES_FINDERS + (
-    'compressor.finders.CompressorFinder',
-)
+
+# django-compressor: http://django-compressor.readthedocs.org/
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'wikilegis', 'static'),
@@ -279,6 +289,20 @@ COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 
+COMPRESS_ENABLED = config('COMPRESS_ENABLED', default=True)
+
+COMPRESS_OFFLINE = config('COMPRESS_OFFLINE', default=(COMPRESS_ENABLED and not DEBUG))
+
+STATICFILES_FINDERS = default.STATICFILES_FINDERS + (
+    'compressor.finders.CompressorFinder',
+)
+
+# whitenoise: http://whitenoise.evans.io/en/latest/
+
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
+
+# django-debug-toolbar: http://django-debug-toolbar.readthedocs.org/
 LIBSASS_SOURCEMAPS = DEBUG
 
 MEDIA_URL = '/media/'
@@ -288,21 +312,44 @@ MEDIA_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'public', 'media'))
 # Debug toolbar
 STATIC_IPS = ('127.0.0.1', '::1', )
 
-# Login settings
-LOGIN_REDIRECT_URL = '/'
+
+# logging:
+# Log everything we can to stdout. It's the Heroku way.
+
+import sys
+import logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'filters': [],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO'
+    },
+}
+
 
 SERIALIZATION_MODULES = {
     'csv': 'export.serializers.csv_serializer'
 }
 
 from easy_thumbnails.conf import Settings as thumbnail_settings
+
 THUMBNAIL_PROCESSORS = (
     'image_cropping.thumbnail_processors.crop_corners',
 ) + thumbnail_settings.THUMBNAIL_PROCESSORS
-
-EMAIL_HOST = config('EMAIL_HOST', default='localhost')
-EMAIL_PORT = config('EMAIL_PORT', cast=int, default=587)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool, default=True)
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='')
