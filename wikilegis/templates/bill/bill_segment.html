@@ -88,7 +88,9 @@
 
             <div class="col s10 m10 l11">
                 <div class="article-prop">
-                    <p id="original" data-raw-content="{{ segment.content }}"><span class="article-type">{% segment_numbering segment %}</span>{{ segment.content }}</p>
+                    {# We seriously can't put html into data attributes jeez #}
+                    <p id="original" data-raw-content="<span class='article-type'>{% segment_numbering segment %}</span>{{ segment.content }}"><span class="article-type">{% segment_numbering segment %}</span>{{ segment.content }}</p>
+                }
                 </div>
                 <div class="after-bar">
                     <div class="col s12 m12 l8">
@@ -164,24 +166,21 @@
                 </div>
             </div>
             <div class="col s10 m10 l11">
-                <div class="article-prop" data-raw-content="{{ amendment.content|escape }}">
+                {# We seriously can't put html into data attributes jeez #}
+                <div class="article-prop" data-raw-content="<span class='article-type'>{% segment_numbering segment %}</span>{{ amendment.content|escape }}">
                     <p class="pp">{{ amendment.content|linebreaks }}</p>
                 </div>
                 <div class="after-bar">
-                    <div class="user col s12 m4">
-                        <div class="col m3 s2">
-                            <div class="avatr">
-                                {% if amendment.author.avatar %}
-                                <div class="pic" style="background-image: url('{% cropped_thumbnail amendment.author 'cropping' %}')"></div>
-                                {% else %}
-                                <div class="pic" style="background-image: url('{% static "img/user.png " %}')"></div>
-                                {% endif %}
-                            </div>
+                    <div class="user col s12">
+                        <div class="avatr">
+                            {% if amendment.author.avatar %}
+                            <div class="pic" style="background-image: url('{% cropped_thumbnail amendment.author 'cropping' %}')"></div>
+                            {% else %}
+                            <div class="pic" style="background-image: url('{% static "img/user.png " %}')"></div>
+                            {% endif %}
                         </div>
-                        <div class="col m9 s9">
-                            <span class="user-name">{% with user=amendment.author %}{% include "auth2/_user_display_name.html" %}{% endwith %}</span>
-                            <p class="date">{{ segment.created|date }}</p>
-                        </div>
+                        <span class="user-name">{% with user=amendment.author %}{% include "auth2/_user_display_name.html" %}{% endwith %}</span>
+                        <p class="date">{{ segment.created|date }}</p>
                     </div>
                 </div>
             </div>
@@ -202,11 +201,11 @@
                         {% else %}
                         {% render_comments amendment readonly|default:True %}
                         {% endif %}
-                    </div>                    
+                    </div>
                 </div>
             </div>
         </div>
-           
+
         {% endfor %}
         {% if segment.bill.status = 'published' %}
             <div class="row center">
