@@ -127,7 +127,7 @@ jQuery(document).ready(function ($) {
     $('.view-comments').click(function(e) {
         e.preventDefault();
         //$(this).hide();
-        console.log($(this).closest('.main').find('.holder').removeClass('hide'));
+        console.log($(this).closest('.main').find('.holder').toggleClass('hide'));
         /*$('.segment-content').focus();*/
     });
 
@@ -141,7 +141,7 @@ jQuery(document).ready(function ($) {
                 $(commentsList[i]).hide();
             }
 
-            $(commentsList[qtd_to_show - 1]).after('<a class="show-more" href="#" title="expand to show all comments on this post" onclick>show <b>' + String(comments.length - qtd_to_show) + '</b> more comments</a>')
+            $(commentsList[qtd_to_show - 1]).after('<span class="show-more" role="button" title="'+ moreCommentsString3 +'" onclick>'+ moreCommentsString1 +'<b> ' + String(comments.length - qtd_to_show) + ' </b>'+ moreCommentsString2 +'</span>')
         }
 
         function showMoreComments(commentsList) {

@@ -12,11 +12,22 @@
 
         </li>
     {% empty %}
-    <span class="no-comments">{% trans "No comments yet. Be the first to comment!" %}</span>
+    {% if segment.bill.status == 'closed' %}
+        <span class="no-comments">{% trans "No comments made." %}</span>
+    {% else %}
+        <span class="no-comments">{% trans "No comments yet. Be the first to comment!" %}</span>
+    {% endif %}
+
     {%  endfor %}
     {% if not readonly %}
     <li class="avatar">
         {% include "comments2/_comment_form.html" %}
     </li>
     {% endif %}
+
+    <script>
+        moreCommentsString1 = '{% trans "Show" %}'
+        moreCommentsString2 = '{% trans "more comments" %}'
+        moreCommentsString3 = '{% trans "Expand to show all comments on this post" %}'
+    </script>
 </ul>

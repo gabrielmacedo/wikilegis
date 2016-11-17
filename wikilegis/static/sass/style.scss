@@ -22,7 +22,9 @@ $unnamedcolor: #28D27A;
 }
 
 html {
-    overflow-x: hidden;
+    @media #{$small-and-down} {
+        font-size: 12px;
+    }
 }
 
 html,
@@ -50,6 +52,7 @@ body {
     background-image: url(static("img/bg.png"));
     padding-top: $nav-height;
     background-attachment: fixed;
+    overflow-x: hidden;
 }
 
 .row.main {
@@ -397,7 +400,11 @@ strong {
     font-weight: 600;
     span { font-size: .9em; }
     &.bill {
-        background-color: $unnamedcolor;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        line-height: 1rem;
+        background-color: #27ae60;
         color:#fff;
         padding: 0 2rem;
         font-size: 1.3rem;
@@ -810,7 +817,7 @@ strong {
     max-width: 960px;
     .bill-link {
         .article {
-            opacity: .5;
+            opacity: .35;
             &:hover {
                 opacity: 0.99;
             }
@@ -858,6 +865,8 @@ strong {
 }
 
 .view-comments {
+    color: #6775a6;
+    cursor: pointer;
     opacity: .7;
     i {
        vertical-align:middle;
@@ -980,11 +989,12 @@ strong {
 }
 
 .pl-full {
+
     .original-text {
       position: relative;
       padding-top: 15px;
 
-      &::before {
+        &::before {
         content: '';
         position: absolute;
         top: 0;
@@ -993,16 +1003,78 @@ strong {
         width: 200vw;
         z-index: 0;
         background-color: hsla(149,67%,90%,1);
-      }
+        border-bottom: 1px solid #E0E0E0;
+        border-top: 1px solid #E0E0E0;
+        }
 
-      .articles-header {
-        svg {
-            opacity: 0.7;
+        .articles-header {
+            svg {
+                opacity: 0.7;
+            }
+            h5 {
+                opacity: 0.7;
+            }
         }
-        h5 {
-            opacity: 0.7;
+
+
+        .article {
+            max-width: 960px;
+
+
+            .inciso {
+
+            }
+
+            .article-content {
+                padding: 0;
+            }
+
+            .comments-counter {
+                padding-left: 10px;
+            }
         }
-      }
+
+        p#original {
+            margin-top: 0;
+        }
+
+        .view-comments {
+            opacity: 0.99;
+        }
+
+        .add-prop-cta.bill {
+          background-color: #27ae60;
+          color: #fff;
+          padding: 0 1rem;
+          font-size: 1rem;
+
+          &.view-comments {
+            background-color: #6b8cae;
+            margin-left: 15px;
+
+            @media #{$medium-and-down} {
+                margin-left: 0;
+                margin-top: 10px;
+                display: flex;
+                width: 195px;
+            }
+
+          }
+
+          i {
+            font-size: 1.5rem;
+            margin-right: 8px;
+          }
+
+          span {
+              font-size: 0.9rem;
+          }
+        }
+
+        .collapsible-comments {
+            margin-left: 0;
+            margin-top: 20px;
+        }
 
     }
     a.bill-link {
@@ -1015,6 +1087,7 @@ strong {
 
     @media #{$small-and-down} {
         overflow: inherit;
+        overflow-x: hidden;
     }
     .articles-header {
         padding: 10px;
@@ -1023,12 +1096,16 @@ strong {
             opacity: .5;
             float: left;
             margin-right: 18px;
+            @media #{$small-and-down}{
+                width: 32px;
+                margin-right: 10px;
+            }
         }
         h5 {
             font-weight: bold;
             opacity: .6;
-            @media screen and (max-width: 400px) {
-                font-size: 1.8em;
+            @media #{$small-and-down}{
+                font-size: 1.4em;
             }
         }
         h6 {
@@ -1047,29 +1124,29 @@ strong {
         align-content: center;
         align-items: center;
         &.paragrafo {
-            margin-left: 30px;
+            padding-left: 30px;
         }
         &.inciso {
-            margin-left: 60px;
+            padding-left: 60px;
         }
         &.alinea {
-            margin-left: 90px;
+            padding-left: 90px;
         }
         &.item {
-            margin-left: 120px;
+            padding-left: 120px;
         }
         @media #{$medium-and-down} {
             &.paragrafo {
-                margin-left: 10px;
+                padding-left: 10px;
             }
             &.inciso {
-                margin-left: 20px;
+                padding-left: 20px;
             }
             &.alinea {
-                margin-left: 30px;
+                padding-left: 30px;
             }
             &.item {
-                margin-left: 40px;
+                padding-left: 40px;
             }
         }
         .comments-counter {
@@ -1088,8 +1165,8 @@ strong {
                     color: gray;
                     position: relative;
                     margin-top: -37px;
-                    @media #{$medium-and-down} {
-                        margin-top: -34px;
+                    @media #{$small-and-down} {
+                        margin-top: -30px;
                     }
                     z-index: 2;
                 }
@@ -1121,6 +1198,10 @@ strong {
 
     }
 
+    &.pl-segments {
+        overflow-x: hidden;
+    }
+
 }
 
 .article-number {
@@ -1139,6 +1220,10 @@ strong {
             svg {
                 opacity: .5;
                 margin-left: -5px;
+                @media #{$medium-and-down} {
+                    margin: 0;
+                    width: 20px;
+                }
             }
         }
     }
@@ -1453,11 +1538,6 @@ blockquote {
     }
 }
 
-.show-more {
-    padding-top: 5px;
-    margin-left: 72px;
-}
-
 $opacity: .6;
 .layarticle {
     margin: 0;
@@ -1523,7 +1603,7 @@ $opacity: .6;
         }
     }
     .article-prop {
-        font-size: 16px;
+        font-size: 1.15rem;
         font-weight: 400;
         margin-bottom: 2px;
 
@@ -1586,7 +1666,7 @@ $opacity: .6;
 
   .collapsible-comments-comment {
     color: black;
-    font-size: 16px;
+    font-size: 1.15rem;
   }
 }
 
@@ -1806,8 +1886,9 @@ $opacity: .6;
 }
 
 .show-more {
-    padding-top: 5px;
-    margin-left: 72px;
+    color: #6775a6;
+    cursor: pointer;
+
     label {
         padding-top: 10px;
         padding-left: 15px;

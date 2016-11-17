@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-16 18:04-0200\n"
+"POT-Creation-Date: 2016-11-17 17:29-0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -194,7 +194,7 @@ msgstr ""
 msgid "Situation"
 msgstr ""
 
-#: core/admin.py:220
+#: core/admin.py:220 templates/comments2/_comment_list.html:29
 msgid "Show"
 msgstr ""
 
@@ -816,20 +816,24 @@ msgstr ""
 msgid "Original text"
 msgstr ""
 
-#: templates/bill/bill_segment.html:125
+#: templates/bill/bill_segment.html:101 templates/bill/bill_segment.html:200
+msgid "Suggest new amendment!"
+msgstr ""
+
+#: templates/bill/bill_segment.html:134
 msgid "Proposed by the society"
 msgstr ""
 
-#: templates/bill/bill_segment.html:157
+#: templates/bill/bill_segment.html:166
 #: templates/comments2/_comment_list.html:7
 msgid "By"
 msgstr ""
 
-#: templates/bill/bill_segment.html:193
-msgid "Make a proposal!"
+#: templates/bill/bill_segment.html:181
+msgid "Comments for this suggestion"
 msgstr ""
 
-#: templates/bill/bill_segment.html:200
+#: templates/bill/bill_segment.html:207
 msgid "Participations closed"
 msgstr ""
 
@@ -850,8 +854,20 @@ msgstr ""
 msgid "Post"
 msgstr ""
 
-#: templates/comments2/_comment_list.html:15
+#: templates/comments2/_comment_list.html:16
+msgid "No comments made."
+msgstr ""
+
+#: templates/comments2/_comment_list.html:18
 msgid "No comments yet. Be the first to comment!"
+msgstr ""
+
+#: templates/comments2/_comment_list.html:30
+msgid "more comments"
+msgstr ""
+
+#: templates/comments2/_comment_list.html:31
+msgid "Expand to show all comments on this post"
 msgstr ""
 
 #: templates/export/export_form.html:10
