@@ -1056,7 +1056,7 @@ strong {
                 margin-left: 0;
                 margin-top: 10px;
                 display: flex;
-                width: 195px;
+                width: 160px;
             }
 
           }
@@ -1667,6 +1667,20 @@ $opacity: .6;
   .collapsible-comments-comment {
     color: black;
     font-size: 1.15rem;
+  }
+
+  .full-comment {
+    > span {
+        display: none;
+    }
+
+    .comment-read-more {
+        display: inline-block;
+        color: #6775a6;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
   }
 }
 
